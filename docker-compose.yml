@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: dynamodb-local
+    hostname: dynamodb-local
+    restart: unless-stopped
+    ports:
+      - "7000:8000"
+    user: root
+    volumes:
+      - ./dynamodb:/home/dynamodblocal/data
+    working_dir: /home/dynamodblocal
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    networks:
+      - dynamo
+
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin
+    container_name: dynamodb-admin
+    hostname: dynamodb-admin
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      DYNAMO_ENDPOINT: "http://dynamodb-local:7000"
+      AWS_REGION: "eu-west-1"
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+    depends_on:
+      - dynamodb-local
+    networks:
+      - dynamo
+
+networks:
+  dynamo:
+    driver: bridge 
